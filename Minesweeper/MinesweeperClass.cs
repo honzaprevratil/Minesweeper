@@ -48,6 +48,7 @@ namespace Minesweeper
                 else
                     i--;
             }
+            BombArr[2, 2] = 1;
         }
 
         public void CheckClick(int colIndex, int rowIndex)
@@ -66,12 +67,12 @@ namespace Minesweeper
         {
             int bombsCount = 0;
 
-            for (int i = (colIndex-1); i < (colIndex+1); i++)
+            for (int i = (colIndex-1); i <= (colIndex+1); i++)
             {
-                for (int j = (rowIndex-1); j < (rowIndex+1); j++)
+                for (int j = (rowIndex-1); j <= (rowIndex+1); j++)
                 {
                     // not the same 
-                    if (i != colIndex && j != rowIndex && i != -1 && j != -1 && i < Cols && j < Rows)
+                    if ( !(i == colIndex && j == rowIndex ) && i != -1 && j != -1 && i < Cols && j < Rows)
                     {
                         if (BombArr[i, j] == 1)
                             bombsCount++;
@@ -83,23 +84,44 @@ namespace Minesweeper
             {
                 // bomb found, set status
                 StatusArr[colIndex, rowIndex] = (BombStatus)bombsCount;
+                return;
             }
             else
             {
                 //  bomb not found,
                 StatusArr[colIndex, rowIndex] = BombStatus.Clicked;
                 // check adjencent
-                for (int i = (colIndex - 1); i < (colIndex + 1); i++)
+
+                for (int i = (colIndex-1); i <= (colIndex+1); i++)
                 {
-                    for (int j = (rowIndex - 1); j < (rowIndex + 1); j++)
+                    for (int j = (rowIndex-1); j <= (rowIndex+1); j++)
                     {
                         // not the same 
-                        if (i != colIndex && j != rowIndex && i != -1 && j != -1 && i < Cols && j < Rows)
+                        if (!(i == colIndex && j == rowIndex) && i != -1 && j != -1 && i < Cols && j < Rows && StatusArr[i, j] == BombStatus.notClicked)
                         {
                             CheckAdjencent(i, j);
                         }
                     }
                 }
+                /*
+                if ( (colIndex-1) != -1 && (rowIndex-1) != -1)
+                    CheckAdjencent( (colIndex-1) , (rowIndex-1) );
+                if ( (colIndex-1) != -1)
+                    CheckAdjencent( (colIndex-1), rowIndex);
+                if ( (colIndex-1) != -1 && (rowIndex+1) < Rows)
+                    CheckAdjencent( (colIndex-1) , (rowIndex+1) );
+
+                if ( (rowIndex-1) != -1)
+                    CheckAdjencent( colIndex , (rowIndex-1) );
+                if ( (rowIndex+1) < Rows)
+                    CheckAdjencent( colIndex , (rowIndex+1) );
+
+                if ( (colIndex+1) < Cols && (rowIndex-1) != -1)
+                    CheckAdjencent( (colIndex+1) , (rowIndex-1) );
+                if ( (colIndex+1) < Cols)
+                    CheckAdjencent( (colIndex+1) , rowIndex);
+                if ( (colIndex+1) < Cols && (rowIndex+1) < Rows)
+                    CheckAdjencent( (colIndex+1) , (rowIndex+1) );*/
             }
         }
     }

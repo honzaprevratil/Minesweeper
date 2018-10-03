@@ -25,8 +25,9 @@ namespace Minesweeper
         public int Rows = 10;
         public int Bombs = 10;
 
-        public int SizePx = 75;
+        public int SizePx = 50;
         public MinesweeperClass Minesweeper { get; set; }
+        private BrushConverter BC = new BrushConverter();
         Grid DynamicGrid = new Grid();
 
         public MainWindow()
@@ -102,7 +103,7 @@ namespace Minesweeper
                 if (Minesweeper.StatusArr[col, row] == BombStatus.notClicked)
                     child.Content = "";
                 else if (Minesweeper.StatusArr[col, row] == BombStatus.Clicked)
-                    child.Content = "0";
+                    child.Background = (Brush)BC.ConvertFrom("#BDBDBD");
                 else if (Minesweeper.StatusArr[col, row] == BombStatus.Marked)
                     child.Content = "X";
                 else
