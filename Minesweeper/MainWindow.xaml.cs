@@ -21,14 +21,16 @@ namespace Minesweeper
     /// </summary>
     public partial class MainWindow : Window
     {
-        public int Cols = 10;
-        public int Rows = 10;
-        public int Bombs = 10;
+        public int Cols = 20;
+        public int Rows = 20;
+        public int Bombs = 5;
 
-        public int SizePx = 50;
+        public int SizePx = 25;
         public MinesweeperClass Minesweeper { get; set; }
+
         private BrushConverter BC = new BrushConverter();
-        Grid DynamicGrid = new Grid();
+        private string[] Colors = new string[] {"", "#1565C0", "#558B2F", "#c62828", "#311B92", "#3E2723", "#004D40", "#263238", "#212121" };
+        private Grid DynamicGrid = new Grid();
 
         public MainWindow()
         {
@@ -36,9 +38,10 @@ namespace Minesweeper
 
             Minesweeper = new MinesweeperClass(Cols, Rows, Bombs);
 
-            DynamicGrid.Width = (Cols * SizePx);
-            DynamicGrid.HorizontalAlignment = HorizontalAlignment.Left;
-            DynamicGrid.VerticalAlignment = VerticalAlignment.Top;
+            DynamicGrid.HorizontalAlignment = HorizontalAlignment.Center;
+            DynamicGrid.VerticalAlignment = VerticalAlignment.Center;
+            DynamicGrid.Margin = new Thickness(5, 0, 5, 5);
+            Grid.SetRow(DynamicGrid, 1);
 
             // Create Columns
             for (int i = 0; i < Cols; i++)
@@ -64,12 +67,15 @@ namespace Minesweeper
                 for (int j = 0; j < Rows; j++)
                 {
                     Button MyControl1 = new Button();
-                    MyControl1.Content = "";
                     MyControl1.Name = "Button" + count.ToString();
-                    MyControl1.Click += Button_Click;
+                    MyControl1.FontWeight = FontWeights.Bold;
+                    MyControl1.FontSize = 16.5;
 
-                    Grid.SetColumn(MyControl1, j);
-                    Grid.SetRow(MyControl1, i);
+                    MyControl1.Click += Button_Click;
+                    MyControl1.MouseRightButtonDown += Button_Right_Click;
+
+                    Grid.SetColumn(MyControl1, i);
+                    Grid.SetRow(MyControl1, j);
                     DynamicGrid.Children.Add(MyControl1);
 
                     count++;
@@ -77,10 +83,18 @@ namespace Minesweeper
             }
 
             // Add the Grid as the Content of the Parent Window Object
-            this.Content = DynamicGrid;
-            this.Height = (Rows * SizePx) + SizePx;
-            this.Width = (Cols * SizePx) + SizePx;
+            MainGrid.Children.Add(DynamicGrid);
+            this.SizeToContent = SizeToContent.WidthAndHeight;
             this.Show();
+        }
+
+        private void Button_Right_Click(object sender, MouseButtonEventArgs e)
+        {
+            Button b = (Button)sender;
+            int col = Grid.GetColumn(b);
+            int row = Grid.GetRow(b);
+            Minesweeper.MarkClick(col, row);
+            Render();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -89,7 +103,6 @@ namespace Minesweeper
             int col = Grid.GetColumn(b);
             int row = Grid.GetRow(b);
             Minesweeper.CheckClick(col, row);
-
             Render();
         }
 
@@ -100,14 +113,38 @@ namespace Minesweeper
                 int col = Grid.GetColumn(child);
                 int row = Grid.GetRow(child);
 
-                if (Minesweeper.StatusArr[col, row] == BombStatus.notClicked)
-                    child.Content = "";
-                else if (Minesweeper.StatusArr[col, row] == BombStatus.Clicked)
-                    child.Background = (Brush)BC.ConvertFrom("#BDBDBD");
-                else if (Minesweeper.StatusArr[col, row] == BombStatus.Marked)
-                    child.Content = "X";
-                else
-                    child.Content = (int)Minesweeper.StatusArr[col, row];
+                Set_Style(child, col, row);
+            }
+        }
+
+        private void Set_Style(Button button, int col, int row)
+        {
+            if (Minesweeper.StatusArr[col, row] == BombStatus.notClicked)
+            {
+                button.Content = ""; // CONTENT
+                button.Background = (Brush)BC.ConvertFrom("#EEEEEE"); // BRUSH
+            }
+            else if (Minesweeper.StatusArr[col, row] == BombStatus.Clicked)
+            {
+                button.Content = ""; // CONTENT
+                button.Background = (Brush)BC.ConvertFrom("#BDBDBD"); // BRUSH
+            }
+            else if (Minesweeper.StatusArr[col, row] == BombStatus.Marked)
+            {
+                Image image = new Image();
+                image.Source = new BitmapImage(new Uri(@"../../imgs/flag.png", UriKind.Relative));
+                button.Content = image; // CONTENT
+            }
+            else if (Minesweeper.StatusArr[col, row] == BombStatus.Boomed)
+            {
+                Image image = new Image();
+                image.Source = new BitmapImage(new Uri(@"../../imgs/bomb.png", UriKind.Relative));
+                button.Content = image; // CONTENT
+            }
+            else
+            {
+                button.Content = (int)Minesweeper.StatusArr[col, row]; // CONTENT
+                button.Foreground = (Brush)BC.ConvertFrom(Colors[(int)Minesweeper.StatusArr[col, row]]);
             }
         }
     }

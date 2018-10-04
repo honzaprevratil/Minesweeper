@@ -55,11 +55,23 @@ namespace Minesweeper
         {
             if (BombArr[colIndex, rowIndex] == 1)
             {
-                // GAME OVER
+                StatusArr[colIndex, rowIndex] = BombStatus.Boomed;
             }
             else
             {
                 CheckAdjencent(colIndex, rowIndex);
+            }
+        }
+
+        public void MarkClick(int colIndex, int rowIndex)
+        {
+            if (StatusArr[colIndex, rowIndex] == BombStatus.notClicked)
+            {
+                StatusArr[colIndex, rowIndex] = BombStatus.Marked;
+            }
+            else if (StatusArr[colIndex, rowIndex] == BombStatus.Marked)
+            {
+                StatusArr[colIndex, rowIndex] = BombStatus.notClicked;
             }
         }
 
@@ -103,25 +115,6 @@ namespace Minesweeper
                         }
                     }
                 }
-                /*
-                if ( (colIndex-1) != -1 && (rowIndex-1) != -1)
-                    CheckAdjencent( (colIndex-1) , (rowIndex-1) );
-                if ( (colIndex-1) != -1)
-                    CheckAdjencent( (colIndex-1), rowIndex);
-                if ( (colIndex-1) != -1 && (rowIndex+1) < Rows)
-                    CheckAdjencent( (colIndex-1) , (rowIndex+1) );
-
-                if ( (rowIndex-1) != -1)
-                    CheckAdjencent( colIndex , (rowIndex-1) );
-                if ( (rowIndex+1) < Rows)
-                    CheckAdjencent( colIndex , (rowIndex+1) );
-
-                if ( (colIndex+1) < Cols && (rowIndex-1) != -1)
-                    CheckAdjencent( (colIndex+1) , (rowIndex-1) );
-                if ( (colIndex+1) < Cols)
-                    CheckAdjencent( (colIndex+1) , rowIndex);
-                if ( (colIndex+1) < Cols && (rowIndex+1) < Rows)
-                    CheckAdjencent( (colIndex+1) , (rowIndex+1) );*/
             }
         }
     }
