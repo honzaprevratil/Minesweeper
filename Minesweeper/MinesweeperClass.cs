@@ -9,19 +9,29 @@ namespace Minesweeper
     public class MinesweeperClass
     {
         private Random RNG = new Random();
-        public int Cols { get; set; }
-        public int Rows { get; set; }
+        private bool firstClick = true;
 
-        public int[,] BombArr { get; set; }
+        private int Cols { get; set; }
+        private int Rows { get; set; }
+        private int MaxBombs { get; set; }
+
+        private int[,] BombArr { get; set; }
         public BombStatus[,] StatusArr { get; set; }
+        public int Flags { get; set; } = 0;
 
         public MinesweeperClass(int cols, int rows, int bombs)
         {
             Cols = cols;
             Rows = rows;
+            MaxBombs = bombs;
+        }
 
+        public void GenerateBombs(int colIndex, int rowIndex)
+        {
+            Flags = 0;
             BombArr = new int[Cols, Rows];
             StatusArr = new BombStatus[Cols, Rows];
+
             for (int i = 0; i < Cols; i++)
             {
                 for (int j = 0; j < Rows; j++)
@@ -31,47 +41,82 @@ namespace Minesweeper
                 }
             }
 
-            GenerateBombs(bombs);
-        }
-
-        public void GenerateBombs(int bombs)
-        {
-            for (int i = 0; i < bombs; i++)
+            for (int i = 0; i < MaxBombs; i++)
             {
                 int randCol = RNG.Next(0, Cols);
                 int randRow = RNG.Next(0, Rows);
 
-                if (BombArr[randCol, randRow] == 0)
+                if (BombArr[randCol, randRow] == 0 && !(randCol == colIndex && randRow == rowIndex))
                 {
                     BombArr[randCol, randRow] = 1;
                 }
                 else
                     i--;
             }
-            BombArr[2, 2] = 1;
         }
 
         public void CheckClick(int colIndex, int rowIndex)
         {
-            if (BombArr[colIndex, rowIndex] == 1)
+            if (!firstClick)
             {
-                StatusArr[colIndex, rowIndex] = BombStatus.Boomed;
-            }
-            else
+                if (StatusArr[colIndex, rowIndex] != BombStatus.Marked)
+                {
+                    if (BombArr[colIndex, rowIndex] == 1)
+                    {
+                        // BOOM!
+                        StatusArr[colIndex, rowIndex] = BombStatus.Boomed;
+                        RevealAll();
+                        firstClick = true;
+                    }
+                    else
+                    {
+                        CheckAdjencent(colIndex, rowIndex);
+                    }
+                }
+            } else
             {
+                GenerateBombs(colIndex, rowIndex);
                 CheckAdjencent(colIndex, rowIndex);
+                firstClick = false;
             }
         }
 
         public void MarkClick(int colIndex, int rowIndex)
         {
-            if (StatusArr[colIndex, rowIndex] == BombStatus.notClicked)
+            if (!firstClick)
             {
-                StatusArr[colIndex, rowIndex] = BombStatus.Marked;
+                if (StatusArr[colIndex, rowIndex] == BombStatus.notClicked)
+                {
+                    StatusArr[colIndex, rowIndex] = BombStatus.Marked;
+                    Flags++;
+                }
+                else if (StatusArr[colIndex, rowIndex] == BombStatus.Marked)
+                {
+                    StatusArr[colIndex, rowIndex] = BombStatus.notClicked;
+                    Flags--;
+                }
             }
-            else if (StatusArr[colIndex, rowIndex] == BombStatus.Marked)
+            else
             {
-                StatusArr[colIndex, rowIndex] = BombStatus.notClicked;
+                GenerateBombs(colIndex, rowIndex);
+                CheckAdjencent(colIndex, rowIndex);
+                firstClick = false;
+            }
+        }
+
+        private void RevealAll()
+        {
+            for (int i = 0; i < Cols; i++)
+            {
+                for (int j = 0; j < Rows; j++)
+                {
+                    if (StatusArr[i, j] != BombStatus.Marked && BombArr[i, j] == 1)
+                        StatusArr[i, j] = BombStatus.Boomed;
+                    else if (StatusArr[i, j] == BombStatus.Marked && BombArr[i, j] == 1)
+                        StatusArr[i, j] = BombStatus.Defused;
+                    else
+                        CheckAdjencent(i, j);
+                }
             }
         }
 
@@ -96,7 +141,6 @@ namespace Minesweeper
             {
                 // bomb found, set status
                 StatusArr[colIndex, rowIndex] = (BombStatus)bombsCount;
-                return;
             }
             else
             {

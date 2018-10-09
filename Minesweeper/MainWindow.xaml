@@ -17,10 +17,24 @@
 
         <Grid Grid.Column="0" Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
+                <ColumnDefinition MinWidth="180" Width="*"/>
+                <ColumnDefinition Width="0.5*"/>
+                <ColumnDefinition MinWidth="180" Width="*"/>
             </Grid.ColumnDefinitions>
+            <Label HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Height="55">
+                    <Label FontSize="15" VerticalAlignment="Center" >Mines:</Label>
+                    <Label FontSize="40" VerticalAlignment="Center" x:Name="minesLabel">099</Label>
+                    <Label FontSize="15" VerticalAlignment="Bottom" x:Name="maxMinesLabel">/ 099</Label>
+                </StackPanel>
+            </Label>
+            <Label Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Height="55">
+                    <Label FontSize="15" VerticalAlignment="Center" >Time:</Label>
+                    <Label FontSize="40" VerticalAlignment="Center" x:Name="timeLabel">999</Label>
+                    <Label FontSize="15" VerticalAlignment="Bottom" x:Name="maxTimeLabel">/ 999</Label>
+                </StackPanel>
+            </Label>
         </Grid>
     </Grid>
 </Window>
