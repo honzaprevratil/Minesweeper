@@ -18,7 +18,7 @@
         <Grid Grid.Column="0" Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition MinWidth="180" Width="*"/>
-                <ColumnDefinition Width="0.5*"/>
+                <ColumnDefinition Width="0.5*" MinWidth="180"/>
                 <ColumnDefinition MinWidth="180" Width="*"/>
             </Grid.ColumnDefinitions>
             <Label HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -35,6 +35,9 @@
                     <Label FontSize="15" VerticalAlignment="Bottom" x:Name="maxTimeLabel">/ 999</Label>
                 </StackPanel>
             </Label>
+            <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,50"  Width="160" x:Name="ModeCombobox"/>
+            <Button  Grid.Column="1" Content="Select mode" HorizontalAlignment="Center" Margin="0,15,0,0" VerticalAlignment="Center" Width="160" Click="Mode_Selected"/>
+            <Label Grid.Column="1" Foreground="Red" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Bottom" x:Name="statusLabel">You win!</Label>
         </Grid>
     </Grid>
 </Window>

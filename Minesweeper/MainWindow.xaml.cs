@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -26,19 +27,41 @@ namespace Minesweeper
         public int Bombs = 55;
 
         public int SizePx = 25;
-        private MinesweeperClass Minesweeper { get; set; }
+        public MinesweeperClass Minesweeper { get; set; }
+
+        private List<Mode> Modes { get; set; } = new List<Mode>();
         private Grid DynamicGrid { get; set; }
 
         private BrushConverter BC = new BrushConverter();
-        private string[] Colors = new string[] {"", "#1565C0", "#558B2F", "#c62828", "#311B92", "#3E2723", "#004D40", "#263238", "#212121" };
+        private string[] Colors = new string[] { "#F5F5F5", "#1565C0", "#558B2F", "#c62828", "#311B92", "#3E2723", "#004D40", "#263238", "#212121" };
 
-        public string ActiveMines { get; set; } = "22";
+        public Timer timer1;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            Minesweeper = new MinesweeperClass(Cols, Rows, Bombs);
+            Modes.Add(new Mode("Beginner", 9, 9, 5));
+            Modes.Add(new Mode("Intermediate", 16, 16, 40));
+            Modes.Add(new Mode("Expert", 30, 16, 99));
+            Modes.Add(new Mode("New", 20, 20, 55));
+
+            ModeCombobox.ItemsSource = Modes;
+            ModeCombobox.SelectedIndex = 3;
+
+            GenerateGrid();
+        }
+
+        private void Mode_Selected(object sender, RoutedEventArgs e)
+        {
+            Cols = (ModeCombobox.SelectedItem as Mode).Cols;
+            Rows = (ModeCombobox.SelectedItem as Mode).Rows;
+            Bombs = (ModeCombobox.SelectedItem as Mode).Bombs;
+            GenerateGrid();
+        }
+
+        private void GenerateGrid()
+        {
             DynamicGrid = new Grid
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -46,6 +69,7 @@ namespace Minesweeper
                 Margin = new Thickness(5, 0, 5, 5)
             };
             Grid.SetRow(DynamicGrid, 1);
+            Minesweeper = new MinesweeperClass(Cols, Rows, Bombs);
 
             // Create Columns
             for (int i = 0; i < Cols; i++)
@@ -91,8 +115,19 @@ namespace Minesweeper
                 }
             }
 
+            if (MainGrid.Children.Count > 1)
+            {
+                MainGrid.Children.RemoveAt(1);
+            }
             // Add the Grid as the Content of the Parent Window Object
             MainGrid.Children.Add(DynamicGrid);
+
+            InitTimer();
+
+            // bind time to display
+            timeLabel.SetBinding(ContentProperty, new Binding("Time") { Source = Minesweeper });
+            statusLabel.SetBinding(ContentProperty, new Binding("GameStatus") { Source = Minesweeper });
+
             this.SizeToContent = SizeToContent.WidthAndHeight;
             this.Show();
         }
@@ -102,7 +137,7 @@ namespace Minesweeper
             Button b = (Button)sender;
             int col = Grid.GetColumn(b);
             int row = Grid.GetRow(b);
-            Minesweeper.MarkClick(col, row);
+            Minesweeper.RightClick(col, row);
             Render();
         }
 
@@ -111,7 +146,7 @@ namespace Minesweeper
             Button b = (Button)sender;
             int col = Grid.GetColumn(b);
             int row = Grid.GetRow(b);
-            Minesweeper.CheckClick(col, row);
+            Minesweeper.LeftClick(col, row);
             Render();
         }
 
@@ -164,6 +199,29 @@ namespace Minesweeper
                 button.Content = (int)Minesweeper.StatusArr[col, row]; // CONTENT
                 button.Foreground = (Brush)BC.ConvertFrom(Colors[(int)Minesweeper.StatusArr[col, row]]);
                 button.Background = (Brush)BC.ConvertFrom("#DADADA"); // BRUSH
+            }
+        }
+
+        public void InitTimer()
+        {
+            if (timer1 != null)
+                timer1.Stop();
+
+            timer1 = new Timer
+            {
+                Interval = 1000, // in miliseconds
+                Enabled = true,
+                AutoReset = true
+            };
+            timer1.Elapsed += Timer1_Elapsed;
+            timer1.Start();
+        }
+
+        public void Timer1_Elapsed(object sender, EventArgs e)
+        {
+            if (!Minesweeper.firstClick)
+            {
+                Minesweeper.DecreaseTime(-1);
             }
         }
     }
