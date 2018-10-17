@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,9 +19,12 @@ namespace Minesweeper
         private int Rows { get; set; }
         private int MaxBombs { get; set; }
 
+        private int clicksFromDoubleClick = 3;
+
         private int[,] BombArr { get; set; }
         public BombStatus[,] StatusArr { get; set; }
         public int Flags { get; set; } = 0;
+
 
         private int time = 999;
         public string Time
@@ -37,6 +41,8 @@ namespace Minesweeper
         }
 
         private string gameStatus = "";
+
+
         public string GameStatus
         {
             get { return gameStatus; }
@@ -82,7 +88,7 @@ namespace Minesweeper
                 int randCol = RNG.Next(0, Cols);
                 int randRow = RNG.Next(0, Rows);
 
-                if (BombArr[randCol, randRow] == 0 && !(randCol == colIndex && randRow == rowIndex))
+                if (BombArr[randCol, randRow] == 0 && !((randCol == colIndex || randCol == colIndex-1 || randCol == colIndex+1) && ( randRow == rowIndex || randRow == rowIndex+1 || randRow == rowIndex-1)) )
                 {
                     BombArr[randCol, randRow] = 1;
                 }
@@ -91,7 +97,7 @@ namespace Minesweeper
             }
         }
 
-        public void LeftClick(int colIndex, int rowIndex)
+        public bool LeftClick(int colIndex, int rowIndex, bool countClicks = true)
         {
             if (!firstClick)
             {
@@ -103,6 +109,7 @@ namespace Minesweeper
                         StatusArr[colIndex, rowIndex] = BombStatus.Boomed;
                         RevealAll();
                         GameStatus = "You have been boomed!";
+                        return false;
                     }
                     else
                     {
@@ -112,12 +119,19 @@ namespace Minesweeper
                 }
             } else
             {
-                GenerateBombs(colIndex, rowIndex);
-                CheckAdjencent(colIndex, rowIndex);
-                firstClick = false;
-                Time = "0";
-                GameStatus = "";
+                if (countClicks)
+                    clicksFromDoubleClick++;
+
+                if (clicksFromDoubleClick >= 2)
+                {
+                    GenerateBombs(colIndex, rowIndex);
+                    CheckAdjencent(colIndex, rowIndex);
+                    firstClick = false;
+                    Time = "0";
+                    GameStatus = "";
+                }
             }
+            return true;
         }
 
         public void RightClick(int colIndex, int rowIndex)
@@ -146,6 +160,14 @@ namespace Minesweeper
                 firstClick = false;
                 Time = "0";
                 GameStatus = "";
+            }
+        }
+
+        public void DoubleClick(int colIndex, int rowIndex)
+        {
+            if ((int)StatusArr[colIndex, rowIndex] >= 1 && (int)StatusArr[colIndex, rowIndex] <= 8)
+            { 
+                 CheckAdjencentFlags(colIndex, rowIndex);
             }
         }
 
@@ -190,12 +212,30 @@ namespace Minesweeper
             {
                 GameStatus = "You won!";
                 RevealAll();
+
+                string mode = "";
+                if (MaxBombs == 10)
+                    mode = "Beginner";
+                if (MaxBombs == 40)
+                    mode = "Intermediate";
+                if (MaxBombs == 99)
+                    mode = "Expert";
+
+                WriteScore(mode, time);
             }
         }
 
-        private void CheckAdjencent(int colIndex, int rowIndex)
+        private void WriteScore(string mode, int time)
         {
-            int bombsCount = 0;
+            CsvHelper csvHelper = new CsvHelper();
+            List<Score> scores = csvHelper.ReadCsv();
+            scores.Add(new Score(mode, time));
+            csvHelper.WriteCsvFile(scores);
+        }
+
+        private void CheckAdjencentFlags(int colIndex, int rowIndex)
+        {
+            int flagsCount = 0;
 
             for (int i = (colIndex-1); i <= (colIndex+1); i++)
             {
@@ -203,6 +243,42 @@ namespace Minesweeper
                 {
                     // not the same 
                     if ( !(i == colIndex && j == rowIndex ) && i != -1 && j != -1 && i < Cols && j < Rows)
+                    {
+                        if (StatusArr[i, j] == BombStatus.Marked)
+                            flagsCount++;
+                    }
+                }
+            }
+
+            if (flagsCount == (int)StatusArr[colIndex, rowIndex])
+            {
+                clicksFromDoubleClick = 0;
+
+                for (int i = (colIndex - 1); i <= (colIndex + 1); i++)
+                {
+                    for (int j = (rowIndex - 1); j <= (rowIndex + 1); j++)
+                    {
+                        // not the same 
+                        if (!(i == colIndex && j == rowIndex) && i != -1 && j != -1 && i < Cols && j < Rows && StatusArr[i, j] == BombStatus.notClicked)
+                        {
+                            LeftClick(i, j, false);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        private void CheckAdjencent(int colIndex, int rowIndex)
+        {
+            int bombsCount = 0;
+
+            for (int i = (colIndex - 1); i <= (colIndex + 1); i++)
+            {
+                for (int j = (rowIndex - 1); j <= (rowIndex + 1); j++)
+                {
+                    // not the same 
+                    if (!(i == colIndex && j == rowIndex) && i != -1 && j != -1 && i < Cols && j < Rows)
                     {
                         if (BombArr[i, j] == 1)
                             bombsCount++;
@@ -221,9 +297,9 @@ namespace Minesweeper
                 StatusArr[colIndex, rowIndex] = BombStatus.Clicked;
                 // check adjencent
 
-                for (int i = (colIndex-1); i <= (colIndex+1); i++)
+                for (int i = (colIndex - 1); i <= (colIndex + 1); i++)
                 {
-                    for (int j = (rowIndex-1); j <= (rowIndex+1); j++)
+                    for (int j = (rowIndex - 1); j <= (rowIndex + 1); j++)
                     {
                         // not the same 
                         if (!(i == colIndex && j == rowIndex) && i != -1 && j != -1 && i < Cols && j < Rows && StatusArr[i, j] == BombStatus.notClicked)

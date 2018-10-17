@@ -35,8 +35,9 @@
                     <Label FontSize="15" VerticalAlignment="Bottom" x:Name="maxTimeLabel">/ 999</Label>
                 </StackPanel>
             </Label>
-            <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,50"  Width="160" x:Name="ModeCombobox"/>
-            <Button  Grid.Column="1" Content="Select mode" HorizontalAlignment="Center" Margin="0,15,0,0" VerticalAlignment="Center" Width="160" Click="Mode_Selected"/>
+            <ComboBox Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,3,0,0"  Width="160" x:Name="ModeCombobox"/>
+            <Button  Grid.Column="1" Content="Select mode" HorizontalAlignment="Center" Margin="0,29,0,0" VerticalAlignment="Top" Width="160" Click="Mode_Selected"/>
+            <Button  Grid.Column="1" Content="Show highscore" HorizontalAlignment="Center" Margin="0,53,0,0" VerticalAlignment="Top" Width="160" Click="High_score"/>
             <Label Grid.Column="1" Foreground="Red" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Bottom" x:Name="statusLabel">You win!</Label>
         </Grid>
     </Grid>

@@ -22,9 +22,9 @@ namespace Minesweeper
     /// </summary>
     public partial class MainWindow : Window
     {
-        public int Cols = 20;
-        public int Rows = 20;
-        public int Bombs = 55;
+        public int Cols = 9;
+        public int Rows = 9;
+        public int Bombs = 10;
 
         public int SizePx = 25;
         public MinesweeperClass Minesweeper { get; set; }
@@ -41,13 +41,12 @@ namespace Minesweeper
         {
             InitializeComponent();
 
-            Modes.Add(new Mode("Beginner", 9, 9, 5));
+            Modes.Add(new Mode("Beginner", 9, 9, 10));
             Modes.Add(new Mode("Intermediate", 16, 16, 40));
             Modes.Add(new Mode("Expert", 30, 16, 99));
-            Modes.Add(new Mode("New", 20, 20, 55));
 
             ModeCombobox.ItemsSource = Modes;
-            ModeCombobox.SelectedIndex = 3;
+            ModeCombobox.SelectedIndex = 0;
 
             GenerateGrid();
         }
@@ -106,6 +105,7 @@ namespace Minesweeper
                     };
                     MyControl1.Click += Mouse_Left_Click;
                     MyControl1.MouseRightButtonDown += Mouse_Right_Click;
+                    MyControl1.MouseDoubleClick += Mouse_MouseDoubleClick;
 
                     Grid.SetColumn(MyControl1, i);
                     Grid.SetRow(MyControl1, j);
@@ -130,6 +130,15 @@ namespace Minesweeper
 
             this.SizeToContent = SizeToContent.WidthAndHeight;
             this.Show();
+        }
+
+        private void Mouse_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Button b = (Button)sender;
+            int col = Grid.GetColumn(b);
+            int row = Grid.GetRow(b);
+            Minesweeper.DoubleClick(col, row);
+            Render();
         }
 
         private void Mouse_Right_Click(object sender, MouseButtonEventArgs e)
@@ -223,6 +232,35 @@ namespace Minesweeper
             {
                 Minesweeper.DecreaseTime(-1);
             }
+        }
+
+        private void High_score(object sender, RoutedEventArgs e)
+        {
+            CsvHelper csvHelper = new CsvHelper();
+            List<Score> scores = csvHelper.ReadCsv();
+
+            List<Score> highScore = scores.Where(x => x.Mode == (ModeCombobox.SelectedItem as Mode).Name).OrderBy(x => x.Time).ToList();
+
+            string Text = "";
+            if (highScore.ElementAtOrDefault(0) != null)
+            {
+                int ctr = 1;
+                Text = "Mode: " + (ModeCombobox.SelectedItem as Mode).Name + "\n\n";
+
+                foreach (Score score in highScore)
+                {
+                    Text = Text + "(" + ctr + ") is " + score.Time + "seconds!\n";
+
+                    if (ctr >= 10)
+                        break;
+                    ctr++;
+                }
+
+            }
+            else
+                Text = "Highscore for #" + (ModeCombobox.SelectedItem as Mode).Name + " is not set!";
+
+            MessageBox.Show(Text);
         }
     }
 }
