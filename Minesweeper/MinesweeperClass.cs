@@ -74,6 +74,15 @@ namespace Minesweeper
             BombArr = new int[Cols, Rows];
             StatusArr = new BombStatus[Cols, Rows];
 
+            int colIndexNeigh = 0;
+            int rowIndexNeigh = 0;
+
+            while ((colIndexNeigh - colIndex + rowIndexNeigh - rowIndex) == 0)
+            {
+                colIndexNeigh = colIndex + RNG.Next(-1, 1);
+                rowIndexNeigh = rowIndex + RNG.Next(-1, 1);
+            }
+
             for (int i = 0; i < Cols; i++)
             {
                 for (int j = 0; j < Rows; j++)
@@ -88,7 +97,7 @@ namespace Minesweeper
                 int randCol = RNG.Next(0, Cols);
                 int randRow = RNG.Next(0, Rows);
 
-                if (BombArr[randCol, randRow] == 0 && !((randCol == colIndex || randCol == colIndex-1 || randCol == colIndex+1) && ( randRow == rowIndex || randRow == rowIndex+1 || randRow == rowIndex-1)) )
+                if (BombArr[randCol, randRow] == 0 && !((randCol == colIndex || randCol == colIndex-1 || randCol == colIndex+1) && ( randRow == rowIndex || randRow == rowIndex+1 || randRow == rowIndex-1)) && !((randCol == colIndexNeigh || randCol == colIndexNeigh-1 || randCol == colIndexNeigh+1) && (randRow == rowIndexNeigh || randRow == rowIndexNeigh+1 || randRow == rowIndexNeigh-1)) )
                 {
                     BombArr[randCol, randRow] = 1;
                 }
